@@ -5,5 +5,12 @@
  * node module documentation at http://nodejs.org/api/modules.html. */
 
 var handleRequest = function(request, response) {
-
+  if (request.method === 'GET') {
+    
+  } else if (request.method === 'POST') {
+    var data = request;
+  }
+  return data;
 };
+
+module.exports.handleRequest = handleRequest;

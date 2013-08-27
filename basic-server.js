@@ -1,5 +1,9 @@
 /* Import node's http module: */
 var http = require("http");
+var fs = require('fs');
+//var handleRequest = require('request-handler.js')
+
+var messages = [];
 
 /* This is the callback function that will be called each time a
  * client (i.e.. a web browser) makes a request to our server. */
@@ -10,29 +14,36 @@ var requestListener = function (request, response) {
    * requesting. */
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  /* "Status code" and "headers" are HTTP concepts that you can
-   * research on the web as and when it becomes necessary. */
+  var sendData = 'hello';
   var statusCode = 200;
+  if (request.method === 'GET') {
+    if (request.url === "/") {
+      fs.readFile('./index.html', function(err, data){
+        if (err) {
+          response.writeHead(404)
+          response.end(JSON.stringify(err));
+          return;
+        }
+        sendResponse(200, data);
+      });
+    } else {
+      fs.readFile('.' + request.url, function(err, data){
+        if (err) {
+          response.writeHead(404)
+          response.end(JSON.stringify(err));
+          return;
+        }
+        sendResponse(200, data);
+      })
+    }
+  }
 
-  /* Without this line, this server wouldn't work.  See the note
-   * below about CORS. */
-  var headers = defaultCorsHeaders;
 
-  headers['Content-Type'] = "text/plain";
-
-  /* Response is an http.ServerRespone object containing methods for
-   * writing our response to the client. Documentation for both request
-   * and response can be found at
-   * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html*/
-  response.writeHead(statusCode, headers);
-  /* .writeHead() tells our server what HTTP status code to send back
-   * to the client, and what headers to include on the response. */
-
-  /* Make sure to always call response.end() - Node will not send
-   * anything back to the client until you do. The string you pass to
-   * response.end() will be the body of the response - i.e. what shows
-   * up in the browser.*/
-  response.end("Hello, World!");
+  var sendResponse = function(status, body) {
+    var headers = defaultCorsHeaders;
+    response.writeHead(statusCode, headers);
+    response.end(body);
+  };
 };
 
 /* These headers will allow Cross-Origin Resource Sharing.
