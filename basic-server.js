@@ -36,8 +36,17 @@ var requestListener = function (request, response) {
         sendResponse(200, data);
       })
     }
+  } else if (request.method === 'POST') {
+    var string = ", ";
+    request.on('data', function(chunk){
+      string += chunk;
+    })
+    request.on('end', function(){
+      fs.appendFile('.' + request.url, string, function(err){
+        if (err) {console.log('errored')}
+      })
+    })
   }
-
 
   var sendResponse = function(status, body) {
     var headers = defaultCorsHeaders;

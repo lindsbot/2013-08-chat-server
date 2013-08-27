@@ -9,5 +9,69 @@
 <input type="text" id='message'></input>
   submit<input type="submit" id='submit'></input>
   get<input type="submit" id='get'></input>
+  <div class="messages"></div>
+  <script type="text/javascript">
+
+  $(document).ready(function(){
+
+    var Message = Backbone.Model.extend({
+      // initialize: function(username, message, createdAt) {
+      //   this.set('username', username);
+      //   this.set('message', message);
+      //   this.set('createdAt', createdAt);
+      // }
+    });
+
+    var Messages = Backbone.Collection.extend({
+      model: message
+    });
+
+    var MessageView = Backbone.View.extend({
+      render: function(){
+        this.$el.append('<span>' + this.model.get('username') + '</span> : ' + this.model.get('message'));
+        return this.$el;
+      }
+    });
+
+    var MessagesView = Backbone.View.extend({
+      initialize: function(){
+        this.collection.on('change', this.render);
+      },
+      render: function(){
+        var that = this;
+        this.collection.forEach(function(model){
+          var message = new MessageView({model: model}).render();
+          that.$el.append(message);
+        })
+        return this.$el;
+      }
+    });
+
+    var messages = new Messages();
+    var messagesView = new MessagesView({collection: messages});
+
+    $('#get').click(function(){
+      $.ajax('http://127.0.0.1:8080/homeroom/messages.json', {
+        type: 'GET',
+        success: function(response){
+          var messageArray = JSON.parse(response + ']');
+          messageArray = _.map(messageArray, function(item){
+            return new Message({username: item.username, message: item.message, createdAt: item.createdAt});
+          })
+          messages.add(messageArray);
+          $('#message').html(messagesView.render());
+        }
+      })
+    });
+
+    $('#submit').click(function(){
+      var message = JSON.stringify({username: 'test', message: $('#message').val().toString(), createdAt: 'test'})
+      $.ajax('http://127.0.0.1:8080/homeroom/messages.json', {
+        type: 'POST',
+        data: message
+      })
+    })
+  })
+  </script>
 </body>
 </html>
